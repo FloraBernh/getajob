@@ -1,10 +1,12 @@
 // === STATE ===
 let state = {
     cvText: '',
+    cvFileName: '',
     coverLetters: [],
     caseTexts: [],
     jobs: [],
     generatedLetters: [],
+    documents: [],
     aiModel: 'claude-3-5-sonnet',
     editingLetterId: null,
     editingCaseId: null,
@@ -15,6 +17,7 @@ let state = {
 document.addEventListener('DOMContentLoaded', async () => {
     setupNavigation();
     setupEventListeners();
+    setupFileUploads();
     await loadAllData();
     renderAll();
     updateAuthUI();
@@ -92,10 +95,12 @@ async function loadData(key, fallback) {
 async function loadAllData() {
     try {
         state.cvText = await loadData('cv_text', '');
+        state.cvFileName = await loadData('cv_file_name', '');
         state.coverLetters = await loadData('cover_letters', []);
         state.caseTexts = await loadData('case_texts', []);
         state.jobs = await loadData('jobs', []);
         state.generatedLetters = await loadData('generated_letters', []);
+        state.documents = await loadData('documents', []);
         state.aiModel = await loadData('ai_model', 'claude-3-5-sonnet');
     } catch (e) {
         console.error('Failed to load data:', e);
@@ -137,6 +142,187 @@ function setupEventListeners() {
         await puter.auth.signIn();
         location.reload();
     });
+}
+
+// === FILE UPLOADS ===
+function setupFileUploads() {
+    // CV upload zone
+    const cvZone = document.getElementById('cv-upload-zone');
+    const cvInput = document.getElementById('cv-file-input');
+
+    cvZone.addEventListener('click', () => cvInput.click());
+    document.getElementById('cv-file-browse').addEventListener('click', (e) => {
+        e.preventDefault();
+        cvInput.click();
+    });
+
+    cvZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        cvZone.classList.add('drag-over');
+    });
+    cvZone.addEventListener('dragleave', () => cvZone.classList.remove('drag-over'));
+    cvZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        cvZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleCVFile(e.dataTransfer.files[0]);
+    });
+    cvInput.addEventListener('change', () => {
+        if (cvInput.files.length > 0) handleCVFile(cvInput.files[0]);
+        cvInput.value = '';
+    });
+
+    document.getElementById('cv-file-remove').addEventListener('click', removeCVFile);
+
+    // Documents upload zone
+    const docsZone = document.getElementById('docs-upload-zone');
+    const docsInput = document.getElementById('docs-file-input');
+
+    docsZone.addEventListener('click', () => docsInput.click());
+    document.getElementById('docs-file-browse').addEventListener('click', (e) => {
+        e.preventDefault();
+        docsInput.click();
+    });
+
+    docsZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        docsZone.classList.add('drag-over');
+    });
+    docsZone.addEventListener('dragleave', () => docsZone.classList.remove('drag-over'));
+    docsZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        docsZone.classList.remove('drag-over');
+        const files = Array.from(e.dataTransfer.files);
+        files.forEach(f => handleDocumentFile(f));
+    });
+    docsInput.addEventListener('change', () => {
+        Array.from(docsInput.files).forEach(f => handleDocumentFile(f));
+        docsInput.value = '';
+    });
+}
+
+async function handleCVFile(file) {
+    const statusEl = document.getElementById('cv-status');
+
+    if (file.type === 'application/pdf') {
+        try {
+            showStatus('cv-status', 'Extraherar text från PDF...');
+            const text = await extractTextFromPDF(file);
+            document.getElementById('cv-text').value = text;
+            state.cvText = text;
+            state.cvFileName = file.name;
+            await saveData('cv_text', state.cvText);
+            await saveData('cv_file_name', state.cvFileName);
+            showCVFileInfo(file.name);
+            showStatus('cv-status', 'PDF importerad och sparad!');
+        } catch (e) {
+            console.error('PDF extraction failed:', e);
+            showStatus('cv-status', 'Kunde inte läsa PDF. Prova klistra in texten manuellt.');
+        }
+    } else if (file.type === 'text/plain') {
+        const text = await file.text();
+        document.getElementById('cv-text').value = text;
+        state.cvText = text;
+        state.cvFileName = file.name;
+        await saveData('cv_text', state.cvText);
+        await saveData('cv_file_name', state.cvFileName);
+        showCVFileInfo(file.name);
+        showStatus('cv-status', 'Textfil importerad och sparad!');
+    } else {
+        showStatus('cv-status', 'Filtypen stöds inte. Använd PDF eller TXT.');
+    }
+}
+
+async function extractTextFromPDF(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n\n';
+    }
+
+    return fullText.trim();
+}
+
+function showCVFileInfo(name) {
+    document.getElementById('cv-file-name').textContent = name;
+    document.getElementById('cv-file-info').classList.remove('hidden');
+}
+
+async function removeCVFile() {
+    state.cvFileName = '';
+    await saveData('cv_file_name', '');
+    document.getElementById('cv-file-info').classList.add('hidden');
+}
+
+async function handleDocumentFile(file) {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        alert(`${file.name} är för stor (max 10MB).`);
+        return;
+    }
+
+    const id = generateId();
+    const isImage = file.type.startsWith('image/');
+
+    // Convert to base64 for storage in KV
+    const base64 = await fileToBase64(file);
+
+    const doc = {
+        id,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        isImage,
+        data: base64,
+        date: new Date().toISOString()
+    };
+
+    state.documents.push(doc);
+    await saveData('documents', state.documents);
+    renderDocuments();
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function downloadDocument(id) {
+    const doc = state.documents.find(d => d.id === id);
+    if (!doc) return;
+
+    const a = document.createElement('a');
+    a.href = doc.data;
+    a.download = doc.name;
+    a.click();
+}
+
+async function deleteDocument(id) {
+    state.documents = state.documents.filter(d => d.id !== id);
+    await saveData('documents', state.documents);
+    renderDocuments();
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function getFileIcon(type) {
+    if (type === 'application/pdf') return '📕';
+    if (type.startsWith('image/')) return '🖼️';
+    if (type.includes('word') || type.includes('document')) return '📘';
+    return '📄';
 }
 
 // === CV ===
@@ -462,10 +648,12 @@ async function exportData() {
 function renderAll() {
     document.getElementById('cv-text').value = state.cvText;
     document.getElementById('ai-model-select').value = state.aiModel;
+    if (state.cvFileName) showCVFileInfo(state.cvFileName);
     renderLetters();
     renderCases();
     renderJobs();
     renderGeneratedLetters();
+    renderDocuments();
 }
 
 function renderLetters() {
@@ -558,6 +746,30 @@ function renderGeneratedLetters() {
                 </div>
             </div>
             <div class="item-preview">${escapeHtml(letter.text)}</div>
+        </div>
+    `).join('');
+}
+
+function renderDocuments() {
+    const list = document.getElementById('docs-list');
+    if (state.documents.length === 0) {
+        list.innerHTML = '';
+        return;
+    }
+    list.innerHTML = state.documents.map(doc => `
+        <div class="file-card">
+            <div class="file-thumb">
+                ${doc.isImage
+                    ? `<img src="${doc.data}" alt="${escapeHtml(doc.name)}">`
+                    : `<span class="file-thumb-icon">${getFileIcon(doc.type)}</span>`
+                }
+            </div>
+            <div class="file-card-name" title="${escapeHtml(doc.name)}">${escapeHtml(doc.name)}</div>
+            <div class="file-card-size">${formatFileSize(doc.size)}</div>
+            <div class="file-card-actions">
+                <button class="btn btn-secondary btn-small" onclick="downloadDocument('${doc.id}')">Ladda ner</button>
+                <button class="btn btn-danger" onclick="deleteDocument('${doc.id}')">Ta bort</button>
+            </div>
         </div>
     `).join('');
 }

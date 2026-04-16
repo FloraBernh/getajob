@@ -6,6 +6,7 @@
     <title>Jobbsökaren - Din AI-drivna jobbassistent</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
     <div class="app">
@@ -42,10 +43,35 @@
                 <!-- CV -->
                 <div class="card">
                     <h3>Mitt CV</h3>
-                    <p class="card-desc">Klistra in ditt CV som text. Detta används som underlag när AI:n genererar personliga brev.</p>
-                    <textarea id="cv-text" class="textarea-large" placeholder="Klistra in ditt CV här..."></textarea>
+                    <p class="card-desc">Ladda upp ditt CV som PDF eller klistra in det som text.</p>
+                    <div class="upload-zone" id="cv-upload-zone">
+                        <input type="file" id="cv-file-input" accept=".pdf,.txt,.doc,.docx" hidden>
+                        <div class="upload-icon">📄</div>
+                        <p class="upload-text">Dra och släpp din PDF här</p>
+                        <p class="upload-hint">eller <a href="#" id="cv-file-browse">bläddra bland filer</a> (PDF, TXT)</p>
+                    </div>
+                    <div id="cv-file-info" class="file-info hidden">
+                        <span class="file-badge">📄 <span id="cv-file-name"></span></span>
+                        <button class="btn btn-danger btn-small" id="cv-file-remove">Ta bort</button>
+                    </div>
+                    <textarea id="cv-text" class="textarea-large" placeholder="Eller klistra in ditt CV här..."></textarea>
                     <button id="save-cv-btn" class="btn btn-primary">Spara CV</button>
                     <span id="cv-status" class="status-msg"></span>
+                </div>
+
+                <!-- Uppladdade dokument -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Mina dokument</h3>
+                    </div>
+                    <p class="card-desc">Ladda upp filer som du vill ha tillgängliga (CV, intyg, betyg, bilder etc.).</p>
+                    <div class="upload-zone" id="docs-upload-zone">
+                        <input type="file" id="docs-file-input" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.txt,.doc,.docx" hidden>
+                        <div class="upload-icon">📎</div>
+                        <p class="upload-text">Dra och släpp filer här</p>
+                        <p class="upload-hint">eller <a href="#" id="docs-file-browse">bläddra bland filer</a> (PDF, bilder, dokument)</p>
+                    </div>
+                    <div id="docs-list" class="files-grid"></div>
                 </div>
 
                 <!-- Personliga brev -->
