@@ -651,6 +651,161 @@ select.input {
     font-weight: 500;
 }
 
+/* === DISCOVER === */
+.discover-options {
+    margin-bottom: 1rem;
+}
+
+.discover-locations {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--primary);
+}
+
+/* External links */
+.external-links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.external-link-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text);
+    transition: all var(--transition);
+}
+
+.external-link-card:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.external-link-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.external-link-info {
+    flex: 1;
+}
+
+.external-link-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.external-link-desc {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.external-link-arrow {
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+/* Discover job cards */
+.discover-job-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    transition: opacity 0.3s ease;
+}
+
+.discover-job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.discover-job-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+
+.discover-job-company {
+    color: var(--primary);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.discover-job-meta {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+}
+
+.discover-match-reason {
+    font-size: 0.85rem;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+.discover-job-desc {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.discover-job-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.discover-letter-result {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+.discover-letter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.discover-letter-header h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
 /* === HIDDEN === */
 .hidden {
     display: none !important;

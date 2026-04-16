@@ -137,6 +137,9 @@ function setupEventListeners() {
     document.getElementById('save-model-btn').addEventListener('click', saveModel);
     document.getElementById('export-btn').addEventListener('click', exportData);
 
+    // Discover
+    setupDiscoverListeners();
+
     // Sign in
     document.getElementById('sign-in-btn')?.addEventListener('click', async () => {
         await puter.auth.signIn();
@@ -616,6 +619,358 @@ async function saveResult() {
     const btn = document.getElementById('save-result-btn');
     btn.textContent = 'Sparat!';
     setTimeout(() => btn.textContent = 'Spara', 2000);
+}
+
+// === DISCOVER JOBS ===
+const PLATSBANKEN_API = 'https://jobsearch.api.jobtechdev.se';
+const MUNICIPALITY_CODES = {
+    stockholm: '0180',
+    goteborg: '1480'
+};
+
+function setupDiscoverListeners() {
+    document.getElementById('discover-btn').addEventListener('click', discoverJobs);
+}
+
+async function discoverJobs() {
+    if (!state.cvText && state.coverLetters.length === 0) {
+        alert('Lägg till ditt CV eller minst ett personligt brev under "Min profil" först, så att AI:n vet vad du söker!');
+        return;
+    }
+
+    const btn = document.getElementById('discover-btn');
+    const statusBox = document.getElementById('discover-status');
+    const statusText = document.getElementById('discover-status-text');
+    const resultsDiv = document.getElementById('discover-results');
+    const externalDiv = document.getElementById('external-links');
+
+    btn.disabled = true;
+    statusBox.classList.remove('hidden');
+    resultsDiv.classList.add('hidden');
+    externalDiv.classList.add('hidden');
+
+    const useStockholm = document.getElementById('loc-stockholm').checked;
+    const useGoteborg = document.getElementById('loc-goteborg').checked;
+    const extraWishes = document.getElementById('discover-extra').value.trim();
+
+    try {
+        // Step 1: AI analyzes profile and generates search terms
+        statusText.textContent = 'Analyserar din profil...';
+        const searchTerms = await analyzeProfileForSearch(extraWishes);
+
+        // Step 2: Generate external search links
+        statusText.textContent = 'Skapar söklänkar för LinkedIn och Indeed...';
+        showExternalLinks(searchTerms, useStockholm, useGoteborg);
+        externalDiv.classList.remove('hidden');
+
+        // Step 3: Search Platsbanken
+        statusText.textContent = 'Söker jobb på Platsbanken...';
+        const municipalities = [];
+        if (useStockholm) municipalities.push(MUNICIPALITY_CODES.stockholm);
+        if (useGoteborg) municipalities.push(MUNICIPALITY_CODES.goteborg);
+
+        const allJobs = [];
+        for (const term of searchTerms.queries) {
+            const jobs = await searchPlatsbanken(term, municipalities);
+            allJobs.push(...jobs);
+        }
+
+        // Deduplicate by id
+        const uniqueJobs = [...new Map(allJobs.map(j => [j.id, j])).values()];
+
+        if (uniqueJobs.length === 0) {
+            statusBox.classList.add('hidden');
+            btn.disabled = false;
+            resultsDiv.classList.remove('hidden');
+            document.getElementById('discover-jobs-list').innerHTML =
+                '<div class="empty-state">Inga jobb hittades just nu. Prova att uppdatera din profil eller ändra sökkriterier.</div>';
+            return;
+        }
+
+        // Step 4: AI ranks and picks best matches
+        statusText.textContent = `Hittade ${uniqueJobs.length} jobb. AI:n matchar mot din profil...`;
+        const rankedJobs = await rankJobsWithAI(uniqueJobs.slice(0, 20), extraWishes);
+
+        // Step 5: Show results
+        resultsDiv.classList.remove('hidden');
+        renderDiscoverJobs(rankedJobs);
+
+    } catch (e) {
+        console.error('Discover failed:', e);
+        alert('Något gick fel vid jobbsökningen. Kontrollera att du är inloggad och försök igen.\n\nFel: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        statusBox.classList.add('hidden');
+    }
+}
+
+async function analyzeProfileForSearch(extraWishes) {
+    let profileSummary = '';
+    if (state.cvText) profileSummary += `CV:\n${state.cvText}\n\n`;
+    state.coverLetters.forEach(l => {
+        profileSummary += `Personligt brev "${l.title}":\n${l.text}\n\n`;
+    });
+
+    const prompt = `Analysera denna persons profil och generera söktermer för jobbsökning.
+
+PROFIL:
+${profileSummary}
+
+${extraWishes ? `EXTRA ÖNSKEMÅL: ${extraWishes}` : ''}
+
+Svara ENBART med JSON i detta format (inget annat):
+{
+  "queries": ["sökterm1", "sökterm2", "sökterm3"],
+  "title": "kort sammanfattning av personens profil",
+  "linkedin_keywords": "keywords for linkedin search",
+  "indeed_keywords": "keywords for indeed search"
+}
+
+Generera 3-5 relevanta söktermer baserat på personens erfarenhet, kompetenser och bransch. Söktermer ska vara på svenska och engelska blandade, t.ex. "product manager", "projektledare", "digital strateg". Svara BARA med JSON.`;
+
+    const response = await puter.ai.chat(prompt, { model: state.aiModel });
+    const text = typeof response === 'string' ? response
+        : response?.message?.content?.[0]?.text || response?.message?.content || String(response);
+
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Kunde inte tolka AI-svaret');
+    return JSON.parse(jsonMatch[0]);
+}
+
+async function searchPlatsbanken(query, municipalities) {
+    const params = new URLSearchParams({
+        q: query,
+        limit: '10',
+        sort: 'relevance'
+    });
+    municipalities.forEach(m => params.append('municipality', m));
+
+    try {
+        const response = await fetch(`${PLATSBANKEN_API}/search?${params}`);
+        if (!response.ok) return [];
+        const data = await response.json();
+        return (data.hits || []).map(hit => ({
+            id: hit.id,
+            title: hit.headline,
+            company: hit.employer?.name || 'Okänt företag',
+            city: hit.workplace_address?.city || hit.workplace_address?.municipality || '',
+            description: hit.description?.text || '',
+            descriptionShort: (hit.description?.text || '').substring(0, 300),
+            url: hit.application_details?.url || `https://arbetsformedlingen.se/platsbanken/annonser/${hit.id}`,
+            deadline: hit.application_deadline,
+            published: hit.publication_date,
+            employmentType: hit.employment_type?.label || '',
+            duration: hit.duration?.label || ''
+        }));
+    } catch (e) {
+        console.error(`Platsbanken search failed for "${query}":`, e);
+        return [];
+    }
+}
+
+async function rankJobsWithAI(jobs, extraWishes) {
+    let profileSummary = '';
+    if (state.cvText) profileSummary += state.cvText.substring(0, 2000);
+
+    const jobsList = jobs.map((j, i) => `[${i}] ${j.title} - ${j.company} (${j.city})\n${j.descriptionShort}...`).join('\n\n');
+
+    const prompt = `Du är en karriärrådgivare. Analysera dessa jobb och ranka vilka som passar bäst för kandidaten.
+
+KANDIDATENS CV (sammanfattning):
+${profileSummary}
+
+${extraWishes ? `EXTRA ÖNSKEMÅL: ${extraWishes}` : ''}
+
+JOBB:
+${jobsList}
+
+Svara ENBART med JSON-array med index för de bästa jobben, rankade från bäst till sämst. Max 8 jobb. Format:
+[{"index": 0, "reason": "kort förklaring varför detta matchar"}, ...]
+
+Svara BARA med JSON-arrayen, inget annat.`;
+
+    try {
+        const response = await puter.ai.chat(prompt, { model: state.aiModel });
+        const text = typeof response === 'string' ? response
+            : response?.message?.content?.[0]?.text || response?.message?.content || String(response);
+
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) return jobs.slice(0, 8).map(j => ({ ...j, matchReason: '' }));
+
+        const ranked = JSON.parse(jsonMatch[0]);
+        return ranked
+            .filter(r => r.index >= 0 && r.index < jobs.length)
+            .map(r => ({ ...jobs[r.index], matchReason: r.reason || '' }));
+    } catch (e) {
+        console.error('Ranking failed:', e);
+        return jobs.slice(0, 8).map(j => ({ ...j, matchReason: '' }));
+    }
+}
+
+function showExternalLinks(searchTerms, useStockholm, useGoteborg) {
+    const locations = [];
+    if (useStockholm) locations.push('Stockholm');
+    if (useGoteborg) locations.push('Göteborg');
+    const locationStr = locations.join(' OR ');
+
+    const linkedinKeywords = encodeURIComponent(searchTerms.linkedin_keywords || searchTerms.queries[0]);
+    const indeedKeywords = encodeURIComponent(searchTerms.indeed_keywords || searchTerms.queries[0]);
+    const locationEncoded = encodeURIComponent(locations.join(', '));
+
+    const links = [
+        {
+            name: 'LinkedIn Jobs',
+            icon: '💼',
+            url: `https://www.linkedin.com/jobs/search/?keywords=${linkedinKeywords}&location=${locationEncoded}`,
+            desc: `Sök "${searchTerms.linkedin_keywords}" i ${locations.join(' och ')}`
+        },
+        {
+            name: 'Indeed',
+            icon: '🔵',
+            url: `https://se.indeed.com/jobb?q=${indeedKeywords}&l=${locationEncoded}`,
+            desc: `Sök "${searchTerms.indeed_keywords}" i ${locations.join(' och ')}`
+        }
+    ];
+
+    // Add a link per search term for Platsbanken too
+    searchTerms.queries.forEach(q => {
+        const params = new URLSearchParams({ q });
+        if (useStockholm) params.append('municipality', MUNICIPALITY_CODES.stockholm);
+        if (useGoteborg) params.append('municipality', MUNICIPALITY_CODES.goteborg);
+        links.push({
+            name: 'Platsbanken',
+            icon: '🇸🇪',
+            url: `https://arbetsformedlingen.se/platsbanken/annonser?${params}`,
+            desc: `Sök "${q}"`
+        });
+    });
+
+    document.getElementById('external-links-list').innerHTML = links.map(link => `
+        <a href="${link.url}" target="_blank" rel="noopener" class="external-link-card">
+            <span class="external-link-icon">${link.icon}</span>
+            <div class="external-link-info">
+                <div class="external-link-name">${escapeHtml(link.name)}</div>
+                <div class="external-link-desc">${escapeHtml(link.desc)}</div>
+            </div>
+            <span class="external-link-arrow">→</span>
+        </a>
+    `).join('');
+}
+
+function renderDiscoverJobs(jobs) {
+    const list = document.getElementById('discover-jobs-list');
+    if (jobs.length === 0) {
+        list.innerHTML = '<div class="empty-state">Inga matchande jobb hittades.</div>';
+        return;
+    }
+
+    list.innerHTML = jobs.map(job => `
+        <div class="discover-job-card" id="discover-${job.id}">
+            <div class="discover-job-header">
+                <div>
+                    <div class="discover-job-title">${escapeHtml(job.title)}</div>
+                    <div class="discover-job-company">${escapeHtml(job.company)}</div>
+                    <div class="discover-job-meta">
+                        📍 ${escapeHtml(job.city)}
+                        ${job.employmentType ? ' · ' + escapeHtml(job.employmentType) : ''}
+                        ${job.deadline ? ' · Sista dag: ' + formatDate(job.deadline) : ''}
+                    </div>
+                </div>
+                <a href="${job.url}" target="_blank" rel="noopener" class="btn btn-secondary btn-small">Visa annons →</a>
+            </div>
+            ${job.matchReason ? `<div class="discover-match-reason">✨ ${escapeHtml(job.matchReason)}</div>` : ''}
+            <div class="discover-job-desc">${escapeHtml(job.descriptionShort)}...</div>
+            <div class="discover-job-actions">
+                <button class="btn btn-primary" onclick="generateDiscoverLetter('${job.id}', this)">✨ Generera personligt brev</button>
+                <button class="btn btn-secondary" onclick="saveDiscoverJob('${job.id}')">💾 Spara till Mina jobb</button>
+                <button class="btn btn-ghost" onclick="dismissDiscoverJob('${job.id}')">Inte intresserad</button>
+            </div>
+            <div class="discover-letter-result hidden" id="letter-${job.id}">
+                <div class="discover-letter-header">
+                    <h4>Genererat personligt brev</h4>
+                    <div class="item-actions">
+                        <button class="btn btn-secondary btn-small" onclick="copyDiscoverLetter('${job.id}')">Kopiera</button>
+                    </div>
+                </div>
+                <div class="generated-text" id="letter-text-${job.id}"></div>
+            </div>
+        </div>
+    `).join('');
+
+    // Store jobs for later reference
+    window._discoverJobs = jobs;
+}
+
+async function generateDiscoverLetter(jobId, btnEl) {
+    const job = (window._discoverJobs || []).find(j => j.id === jobId);
+    if (!job) return;
+
+    btnEl.disabled = true;
+    btnEl.textContent = 'Genererar...';
+
+    const fakeJob = {
+        title: job.title,
+        company: job.company,
+        description: job.description || job.descriptionShort
+    };
+
+    const prompt = buildPrompt(fakeJob, '');
+
+    try {
+        const response = await puter.ai.chat(prompt, { model: state.aiModel });
+        const generatedText = response?.message?.content?.[0]?.text
+            || response?.message?.content
+            || response?.toString?.()
+            || response;
+
+        const text = typeof generatedText === 'string' ? generatedText : JSON.stringify(generatedText);
+        document.getElementById(`letter-text-${jobId}`).textContent = text;
+        document.getElementById(`letter-${jobId}`).classList.remove('hidden');
+    } catch (e) {
+        console.error('Letter generation failed:', e);
+        alert('Kunde inte generera brev. Försök igen.');
+    } finally {
+        btnEl.disabled = false;
+        btnEl.textContent = '✨ Generera personligt brev';
+    }
+}
+
+function copyDiscoverLetter(jobId) {
+    const text = document.getElementById(`letter-text-${jobId}`).textContent;
+    navigator.clipboard.writeText(text);
+}
+
+async function saveDiscoverJob(jobId) {
+    const job = (window._discoverJobs || []).find(j => j.id === jobId);
+    if (!job) return;
+
+    // Check if already saved
+    if (state.jobs.some(j => j.title === job.title && j.company === job.company)) {
+        alert('Detta jobb finns redan i "Mina jobb".');
+        return;
+    }
+
+    state.jobs.push({
+        id: generateId(),
+        title: job.title,
+        company: job.company,
+        description: job.description || job.descriptionShort,
+        url: job.url,
+        date: new Date().toISOString()
+    });
+
+    await saveData('jobs', state.jobs);
+    renderJobs();
+    alert(`"${job.title}" sparad till Mina jobb!`);
+}
+
+function dismissDiscoverJob(jobId) {
+    const card = document.getElementById(`discover-${jobId}`);
+    if (card) {
+        card.style.opacity = '0.3';
+        card.style.pointerEvents = 'none';
+    }
 }
 
 // === SETTINGS ===

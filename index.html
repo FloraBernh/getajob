@@ -19,6 +19,9 @@
                 <li><a href="#" class="nav-link active" data-tab="profile">
                     <span class="nav-icon">👤</span> Min profil
                 </a></li>
+                <li><a href="#" class="nav-link" data-tab="discover">
+                    <span class="nav-icon">🔍</span> Hitta jobb
+                </a></li>
                 <li><a href="#" class="nav-link" data-tab="jobs">
                     <span class="nav-icon">💼</span> Mina jobb
                 </a></li>
@@ -114,6 +117,51 @@
                         <button id="save-case-btn" class="btn btn-primary">Spara</button>
                         <button id="cancel-case-btn" class="btn btn-ghost">Avbryt</button>
                     </div>
+                </div>
+            </section>
+
+            <!-- HITTA JOBB -->
+            <section id="tab-discover" class="tab-content">
+                <h2>Hitta jobb</h2>
+                <p class="section-desc">Låt AI:n analysera din profil och hitta jobb som passar dig i Stockholm och Göteborg.</p>
+
+                <div class="card">
+                    <h3>Sök jobb automatiskt</h3>
+                    <p class="card-desc">AI:n analyserar ditt CV och dina texter, söker sedan igenom Platsbanken, LinkedIn och Indeed efter jobb som matchar din profil.</p>
+
+                    <div class="discover-options">
+                        <div class="discover-locations">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="loc-stockholm" checked> Stockholm
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="loc-goteborg" checked> Göteborg
+                            </label>
+                        </div>
+                        <div style="margin-top: 0.75rem;">
+                            <input type="text" id="discover-extra" class="input" placeholder="Extra önskemål (valfritt, t.ex. 'remote ok', 'minst 45 000 kr')">
+                        </div>
+                    </div>
+
+                    <button id="discover-btn" class="btn btn-primary btn-large">🔍 Sök jobb åt mig</button>
+                </div>
+
+                <div id="discover-status" class="status-box hidden">
+                    <div class="spinner"></div>
+                    <span id="discover-status-text">Analyserar din profil...</span>
+                </div>
+
+                <!-- Externa sökningar -->
+                <div id="external-links" class="card hidden">
+                    <h3>Sök även på andra plattformar</h3>
+                    <p class="card-desc">Baserat på din profil har AI:n skapat sökningar åt dig:</p>
+                    <div id="external-links-list" class="external-links-list"></div>
+                </div>
+
+                <!-- Matchade jobb -->
+                <div id="discover-results" class="hidden">
+                    <h3 style="margin: 1.5rem 0 1rem;">Matchade jobb från Platsbanken</h3>
+                    <div id="discover-jobs-list"></div>
                 </div>
             </section>
 
