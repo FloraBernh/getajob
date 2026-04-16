@@ -519,18 +519,13 @@ async function generateLetter() {
             model: state.aiModel,
         });
 
-        const generatedText = response?.message?.content?.[0]?.text
-            || response?.message?.content
-            || response?.toString?.()
-            || response;
-
-        document.getElementById('generated-text').textContent = typeof generatedText === 'string'
-            ? generatedText
-            : JSON.stringify(generatedText);
+        const generatedText = extractAIText(response);
+        document.getElementById('generated-text').textContent = generatedText;
         resultCard.classList.remove('hidden');
     } catch (e) {
         console.error('AI generation failed:', e);
-        alert('Kunde inte generera brev. Kontrollera att du är inloggad och försök igen.\n\nFel: ' + e.message);
+        const errMsg = e?.message || e?.error || (typeof e === 'string' ? e : JSON.stringify(e));
+        alert('Kunde inte generera brev. Kontrollera att du är inloggad och försök igen.\n\nFel: ' + errMsg);
     } finally {
         generateBtn.disabled = false;
         statusBox.classList.add('hidden');
@@ -697,7 +692,8 @@ async function discoverJobs() {
 
     } catch (e) {
         console.error('Discover failed:', e);
-        alert('Något gick fel vid jobbsökningen. Kontrollera att du är inloggad och försök igen.\n\nFel: ' + e.message);
+        const errMsg = e?.message || e?.error || (typeof e === 'string' ? e : JSON.stringify(e));
+        alert('Något gick fel vid jobbsökningen. Kontrollera att du är inloggad och försök igen.\n\nFel: ' + errMsg);
     } finally {
         btn.disabled = false;
         statusBox.classList.add('hidden');
@@ -729,13 +725,25 @@ Svara ENBART med JSON i detta format (inget annat):
 Generera 3-5 relevanta söktermer baserat på personens erfarenhet, kompetenser och bransch. Söktermer ska vara på svenska och engelska blandade, t.ex. "product manager", "projektledare", "digital strateg". Svara BARA med JSON.`;
 
     const response = await puter.ai.chat(prompt, { model: state.aiModel });
-    const text = typeof response === 'string' ? response
-        : response?.message?.content?.[0]?.text || response?.message?.content || String(response);
+    const text = extractAIText(response);
 
     // Extract JSON from response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('Kunde inte tolka AI-svaret');
+    if (!jsonMatch) throw new Error('Kunde inte tolka AI-svaret: ' + text.substring(0, 100));
     return JSON.parse(jsonMatch[0]);
+}
+
+// Helper to reliably extract text from puter.ai.chat response
+function extractAIText(response) {
+    if (typeof response === 'string') return response;
+    if (response?.message?.content) {
+        const content = response.message.content;
+        if (typeof content === 'string') return content;
+        if (Array.isArray(content) && content[0]?.text) return content[0].text;
+    }
+    if (response?.text) return response.text;
+    if (response?.content) return typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+    return String(response);
 }
 
 async function searchPlatsbanken(query, municipalities) {
@@ -792,8 +800,7 @@ Svara BARA med JSON-arrayen, inget annat.`;
 
     try {
         const response = await puter.ai.chat(prompt, { model: state.aiModel });
-        const text = typeof response === 'string' ? response
-            : response?.message?.content?.[0]?.text || response?.message?.content || String(response);
+        const text = extractAIText(response);
 
         const jsonMatch = text.match(/\[[\s\S]*\]/);
         if (!jsonMatch) return jobs.slice(0, 8).map(j => ({ ...j, matchReason: '' }));
@@ -919,12 +926,7 @@ async function generateDiscoverLetter(jobId, btnEl) {
 
     try {
         const response = await puter.ai.chat(prompt, { model: state.aiModel });
-        const generatedText = response?.message?.content?.[0]?.text
-            || response?.message?.content
-            || response?.toString?.()
-            || response;
-
-        const text = typeof generatedText === 'string' ? generatedText : JSON.stringify(generatedText);
+        const text = extractAIText(response);
         document.getElementById(`letter-text-${jobId}`).textContent = text;
         document.getElementById(`letter-${jobId}`).classList.remove('hidden');
     } catch (e) {
