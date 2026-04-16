@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobbsökaren - Din AI-drivna jobbassistent</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+    <div class="app">
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>Jobbsökaren</h1>
+                <p class="subtitle">AI-driven jobbassistent</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active" data-tab="profile">
+                    <span class="nav-icon">👤</span> Min profil
+                </a></li>
+                <li><a href="#" class="nav-link" data-tab="jobs">
+                    <span class="nav-icon">💼</span> Mina jobb
+                </a></li>
+                <li><a href="#" class="nav-link" data-tab="generate">
+                    <span class="nav-icon">✨</span> Generera brev
+                </a></li>
+                <li><a href="#" class="nav-link" data-tab="settings">
+                    <span class="nav-icon">⚙️</span> Inställningar
+                </a></li>
+            </ul>
+            <div class="user-info" id="user-info">
+                <button id="sign-in-btn" class="btn btn-primary">Logga in med Puter</button>
+            </div>
+        </nav>
+
+        <main class="content">
+            <!-- MIN PROFIL -->
+            <section id="tab-profile" class="tab-content active">
+                <h2>Min profil</h2>
+                <p class="section-desc">Lägg till ditt CV och spara dina tidigare texter. Dessa används som referens för att matcha din tonalitet.</p>
+
+                <!-- CV -->
+                <div class="card">
+                    <h3>Mitt CV</h3>
+                    <p class="card-desc">Klistra in ditt CV som text. Detta används som underlag när AI:n genererar personliga brev.</p>
+                    <textarea id="cv-text" class="textarea-large" placeholder="Klistra in ditt CV här..."></textarea>
+                    <button id="save-cv-btn" class="btn btn-primary">Spara CV</button>
+                    <span id="cv-status" class="status-msg"></span>
+                </div>
+
+                <!-- Personliga brev -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Mina personliga brev</h3>
+                        <button id="add-letter-btn" class="btn btn-secondary btn-small">+ Lägg till</button>
+                    </div>
+                    <p class="card-desc">Spara personliga brev du skrivit tidigare. AI:n analyserar din skrivstil härifrån.</p>
+                    <div id="letters-list" class="items-list"></div>
+                </div>
+
+                <!-- Personliga brev formulär (dolt) -->
+                <div id="letter-form" class="card form-card hidden">
+                    <h3 id="letter-form-title">Lägg till personligt brev</h3>
+                    <input type="text" id="letter-title" class="input" placeholder="Titel (t.ex. 'Ansökan till Spotify')">
+                    <textarea id="letter-text" class="textarea-large" placeholder="Klistra in ditt personliga brev här..."></textarea>
+                    <div class="form-actions">
+                        <button id="save-letter-btn" class="btn btn-primary">Spara</button>
+                        <button id="cancel-letter-btn" class="btn btn-ghost">Avbryt</button>
+                    </div>
+                </div>
+
+                <!-- Case-texter -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Mina case-texter</h3>
+                        <button id="add-case-btn" class="btn btn-secondary btn-small">+ Lägg till</button>
+                    </div>
+                    <p class="card-desc">Spara case-texter eller andra skrivprov. Dessa bidrar till att förstå din ton och stil.</p>
+                    <div id="cases-list" class="items-list"></div>
+                </div>
+
+                <!-- Case formulär (dolt) -->
+                <div id="case-form" class="card form-card hidden">
+                    <h3 id="case-form-title">Lägg till case-text</h3>
+                    <input type="text" id="case-title" class="input" placeholder="Titel (t.ex. 'Strategicase Acme Corp')">
+                    <textarea id="case-text" class="textarea-large" placeholder="Klistra in din case-text här..."></textarea>
+                    <div class="form-actions">
+                        <button id="save-case-btn" class="btn btn-primary">Spara</button>
+                        <button id="cancel-case-btn" class="btn btn-ghost">Avbryt</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MINA JOBB -->
+            <section id="tab-jobs" class="tab-content">
+                <h2>Mina jobb</h2>
+                <p class="section-desc">Håll koll på jobb du är intresserad av. Lägg till jobbeskrivningar som AI:n kan generera brev för.</p>
+
+                <button id="add-job-btn" class="btn btn-primary" style="margin-bottom: 1.5rem;">+ Lägg till jobb</button>
+
+                <!-- Jobb formulär (dolt) -->
+                <div id="job-form" class="card form-card hidden">
+                    <h3 id="job-form-title">Lägg till jobb</h3>
+                    <input type="text" id="job-title" class="input" placeholder="Jobbtitel (t.ex. 'Product Manager')">
+                    <input type="text" id="job-company" class="input" placeholder="Företag (t.ex. 'Klarna')">
+                    <textarea id="job-description" class="textarea-large" placeholder="Klistra in jobbeskrivningen här..."></textarea>
+                    <div class="form-actions">
+                        <button id="save-job-btn" class="btn btn-primary">Spara</button>
+                        <button id="cancel-job-btn" class="btn btn-ghost">Avbryt</button>
+                    </div>
+                </div>
+
+                <div id="jobs-list" class="items-list"></div>
+            </section>
+
+            <!-- GENERERA BREV -->
+            <section id="tab-generate" class="tab-content">
+                <h2>Generera personligt brev</h2>
+                <p class="section-desc">Välj ett jobb och låt AI:n skriva ett personligt brev som matchar din stil och jobbets krav.</p>
+
+                <div class="card">
+                    <h3>Välj jobb</h3>
+                    <select id="job-select" class="input">
+                        <option value="">-- Välj ett jobb --</option>
+                    </select>
+
+                    <div id="selected-job-preview" class="job-preview hidden">
+                        <h4 id="preview-title"></h4>
+                        <p id="preview-company" class="preview-company"></p>
+                        <p id="preview-description" class="preview-desc"></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Extra instruktioner (valfritt)</h3>
+                    <textarea id="extra-instructions" class="textarea-small" placeholder="T.ex. 'Betona min erfarenhet av projektledning' eller 'Håll det kort och koncist'"></textarea>
+                </div>
+
+                <button id="generate-btn" class="btn btn-primary btn-large">✨ Generera personligt brev</button>
+
+                <div id="generate-status" class="status-box hidden">
+                    <div class="spinner"></div>
+                    <span id="generate-status-text">Genererar ditt personliga brev...</span>
+                </div>
+
+                <div id="generated-result" class="card result-card hidden">
+                    <div class="card-header">
+                        <h3>Genererat personligt brev</h3>
+                        <div class="result-actions">
+                            <button id="copy-result-btn" class="btn btn-secondary btn-small">Kopiera</button>
+                            <button id="save-result-btn" class="btn btn-secondary btn-small">Spara</button>
+                        </div>
+                    </div>
+                    <div id="generated-text" class="generated-text"></div>
+                </div>
+
+                <!-- Sparade genererade brev -->
+                <div class="card" style="margin-top: 2rem;">
+                    <h3>Sparade genererade brev</h3>
+                    <div id="generated-list" class="items-list"></div>
+                </div>
+            </section>
+
+            <!-- INSTÄLLNINGAR -->
+            <section id="tab-settings" class="tab-content">
+                <h2>Inställningar</h2>
+                <p class="section-desc">Anpassa appen efter dina behov.</p>
+
+                <div class="card">
+                    <h3>AI-modell</h3>
+                    <p class="card-desc">Välj vilken AI-modell som ska användas för att generera brev.</p>
+                    <select id="ai-model-select" class="input">
+                        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Rekommenderad)</option>
+                        <option value="claude-3-7-sonnet">Claude 3.7 Sonnet</option>
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini (Snabbare)</option>
+                    </select>
+                    <button id="save-model-btn" class="btn btn-primary" style="margin-top: 1rem;">Spara</button>
+                    <span id="model-status" class="status-msg"></span>
+                </div>
+
+                <div class="card">
+                    <h3>Hantera data</h3>
+                    <p class="card-desc">Din data sparas i Puters molnlagring kopplat till ditt konto.</p>
+                    <button id="export-btn" class="btn btn-secondary">Exportera all data</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
