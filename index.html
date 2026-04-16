@@ -3,81 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jobbsökaren - Din AI-drivna jobbassistent</title>
+    <title>Jobbsökaren</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
     <div class="app">
+        <!-- SIDEBAR -->
         <nav class="sidebar">
             <div class="logo">
-                <h1>Jobbsökaren</h1>
-                <p class="subtitle">AI-driven jobbassistent</p>
+                <span class="logo-mark">J</span>
+                <div>
+                    <div class="logo-text">Jobbsökaren</div>
+                    <div class="logo-sub">AI-driven jobbassistent</div>
+                </div>
             </div>
             <ul class="nav-links">
                 <li><a href="#" class="nav-link active" data-tab="profile">
-                    <span class="nav-icon">👤</span> Min profil
+                    <span class="nav-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+                    </span>
+                    Min profil
                 </a></li>
                 <li><a href="#" class="nav-link" data-tab="discover">
-                    <span class="nav-icon">🔍</span> Hitta jobb
+                    <span class="nav-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                    </span>
+                    Hitta jobb
                 </a></li>
                 <li><a href="#" class="nav-link" data-tab="jobs">
-                    <span class="nav-icon">💼</span> Mina jobb
+                    <span class="nav-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                    </span>
+                    Mina jobb
                 </a></li>
                 <li><a href="#" class="nav-link" data-tab="generate">
-                    <span class="nav-icon">✨</span> Generera brev
+                    <span class="nav-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+                    </span>
+                    Generera brev
                 </a></li>
                 <li><a href="#" class="nav-link" data-tab="settings">
-                    <span class="nav-icon">⚙️</span> Inställningar
+                    <span class="nav-icon">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </span>
+                    Inställningar
                 </a></li>
             </ul>
             <div class="user-info" id="user-info">
-                <button id="sign-in-btn" class="btn btn-primary">Logga in med Puter</button>
+                <button id="sign-in-btn" class="btn btn-signin">Logga in</button>
             </div>
         </nav>
 
         <main class="content">
             <!-- MIN PROFIL -->
             <section id="tab-profile" class="tab-content active">
-                <h2>Min profil</h2>
-                <p class="section-desc">Lägg till ditt CV och spara dina tidigare texter. Dessa används som referens för att matcha din tonalitet.</p>
+                <div class="page-header">
+                    <h1>Min profil</h1>
+                    <p class="page-desc">Lägg till ditt CV och spara dina tidigare texter. Dessa används som referens för att matcha din tonalitet.</p>
+                </div>
 
-                <!-- CV -->
+                <div class="stats-row">
+                    <div class="stat-card stat-pink">
+                        <div class="stat-number" id="stat-cv">0</div>
+                        <div class="stat-label">CV</div>
+                    </div>
+                    <div class="stat-card stat-blue">
+                        <div class="stat-number" id="stat-letters">0</div>
+                        <div class="stat-label">Personliga brev</div>
+                    </div>
+                    <div class="stat-card stat-green">
+                        <div class="stat-number" id="stat-cases">0</div>
+                        <div class="stat-label">Case-texter</div>
+                    </div>
+                    <div class="stat-card stat-purple">
+                        <div class="stat-number" id="stat-docs">0</div>
+                        <div class="stat-label">Dokument</div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h3>Mitt CV</h3>
                     <p class="card-desc">Ladda upp ditt CV som PDF eller klistra in det som text.</p>
                     <div class="upload-zone" id="cv-upload-zone">
                         <input type="file" id="cv-file-input" accept=".pdf,.txt,.doc,.docx" hidden>
-                        <div class="upload-icon">📄</div>
+                        <div class="upload-icon-wrap">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L8 8m4-4l4 4M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg>
+                        </div>
                         <p class="upload-text">Dra och släpp din PDF här</p>
-                        <p class="upload-hint">eller <a href="#" id="cv-file-browse">bläddra bland filer</a> (PDF, TXT)</p>
+                        <p class="upload-hint">eller <a href="#" id="cv-file-browse">bläddra bland filer</a></p>
                     </div>
                     <div id="cv-file-info" class="file-info hidden">
                         <span class="file-badge">📄 <span id="cv-file-name"></span></span>
-                        <button class="btn btn-danger btn-small" id="cv-file-remove">Ta bort</button>
+                        <button class="btn btn-ghost btn-small" id="cv-file-remove">Ta bort</button>
                     </div>
-                    <textarea id="cv-text" class="textarea-large" placeholder="Eller klistra in ditt CV här..."></textarea>
-                    <button id="save-cv-btn" class="btn btn-primary">Spara CV</button>
-                    <span id="cv-status" class="status-msg"></span>
+                    <textarea id="cv-text" class="textarea" placeholder="Eller klistra in ditt CV här..."></textarea>
+                    <div class="card-actions">
+                        <button id="save-cv-btn" class="btn btn-primary">Spara CV</button>
+                        <span id="cv-status" class="status-msg"></span>
+                    </div>
                 </div>
 
-                <!-- Uppladdade dokument -->
                 <div class="card">
-                    <div class="card-header">
-                        <h3>Mina dokument</h3>
-                    </div>
+                    <h3>Mina dokument</h3>
                     <p class="card-desc">Ladda upp filer som du vill ha tillgängliga (CV, intyg, betyg, bilder etc.).</p>
                     <div class="upload-zone" id="docs-upload-zone">
                         <input type="file" id="docs-file-input" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.txt,.doc,.docx" hidden>
-                        <div class="upload-icon">📎</div>
+                        <div class="upload-icon-wrap">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L8 8m4-4l4 4M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg>
+                        </div>
                         <p class="upload-text">Dra och släpp filer här</p>
-                        <p class="upload-hint">eller <a href="#" id="docs-file-browse">bläddra bland filer</a> (PDF, bilder, dokument)</p>
+                        <p class="upload-hint">eller <a href="#" id="docs-file-browse">bläddra bland filer</a></p>
                     </div>
                     <div id="docs-list" class="files-grid"></div>
                 </div>
 
-                <!-- Personliga brev -->
                 <div class="card">
                     <div class="card-header">
                         <h3>Mina personliga brev</h3>
@@ -87,32 +131,29 @@
                     <div id="letters-list" class="items-list"></div>
                 </div>
 
-                <!-- Personliga brev formulär (dolt) -->
-                <div id="letter-form" class="card form-card hidden">
+                <div id="letter-form" class="card card-form hidden">
                     <h3 id="letter-form-title">Lägg till personligt brev</h3>
                     <input type="text" id="letter-title" class="input" placeholder="Titel (t.ex. 'Ansökan till Spotify')">
-                    <textarea id="letter-text" class="textarea-large" placeholder="Klistra in ditt personliga brev här..."></textarea>
+                    <textarea id="letter-text" class="textarea" placeholder="Klistra in ditt personliga brev här..."></textarea>
                     <div class="form-actions">
                         <button id="save-letter-btn" class="btn btn-primary">Spara</button>
                         <button id="cancel-letter-btn" class="btn btn-ghost">Avbryt</button>
                     </div>
                 </div>
 
-                <!-- Case-texter -->
                 <div class="card">
                     <div class="card-header">
                         <h3>Mina case-texter</h3>
                         <button id="add-case-btn" class="btn btn-secondary btn-small">+ Lägg till</button>
                     </div>
-                    <p class="card-desc">Spara case-texter eller andra skrivprov. Dessa bidrar till att förstå din ton och stil.</p>
+                    <p class="card-desc">Spara case-texter eller andra skrivprov.</p>
                     <div id="cases-list" class="items-list"></div>
                 </div>
 
-                <!-- Case formulär (dolt) -->
-                <div id="case-form" class="card form-card hidden">
+                <div id="case-form" class="card card-form hidden">
                     <h3 id="case-form-title">Lägg till case-text</h3>
                     <input type="text" id="case-title" class="input" placeholder="Titel (t.ex. 'Strategicase Acme Corp')">
-                    <textarea id="case-text" class="textarea-large" placeholder="Klistra in din case-text här..."></textarea>
+                    <textarea id="case-text" class="textarea" placeholder="Klistra in din case-text här..."></textarea>
                     <div class="form-actions">
                         <button id="save-case-btn" class="btn btn-primary">Spara</button>
                         <button id="cancel-case-btn" class="btn btn-ghost">Avbryt</button>
@@ -122,28 +163,28 @@
 
             <!-- HITTA JOBB -->
             <section id="tab-discover" class="tab-content">
-                <h2>Hitta jobb</h2>
-                <p class="section-desc">Låt AI:n analysera din profil och hitta jobb som passar dig i Stockholm och Göteborg.</p>
+                <div class="page-header">
+                    <h1>Hitta jobb</h1>
+                    <p class="page-desc">Låt AI:n analysera din profil och hitta jobb som passar dig.</p>
+                </div>
 
                 <div class="card">
                     <h3>Sök jobb automatiskt</h3>
                     <p class="card-desc">AI:n analyserar ditt CV och dina texter, söker sedan igenom Platsbanken, LinkedIn och Indeed efter jobb som matchar din profil.</p>
-
                     <div class="discover-options">
-                        <div class="discover-locations">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="loc-stockholm" checked> Stockholm
+                        <div class="pill-group">
+                            <label class="pill-check">
+                                <input type="checkbox" id="loc-stockholm" checked>
+                                <span class="pill-label">Stockholm</span>
                             </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="loc-goteborg" checked> Göteborg
+                            <label class="pill-check">
+                                <input type="checkbox" id="loc-goteborg" checked>
+                                <span class="pill-label">Göteborg</span>
                             </label>
                         </div>
-                        <div style="margin-top: 0.75rem;">
-                            <input type="text" id="discover-extra" class="input" placeholder="Extra önskemål (valfritt, t.ex. 'remote ok', 'minst 45 000 kr')">
-                        </div>
+                        <input type="text" id="discover-extra" class="input" placeholder="Extra önskemål (valfritt, t.ex. 'remote ok', 'minst 45 000 kr')" style="margin-top: 0.75rem;">
                     </div>
-
-                    <button id="discover-btn" class="btn btn-primary btn-large">🔍 Sök jobb åt mig</button>
+                    <button id="discover-btn" class="btn btn-primary btn-large">Sök jobb åt mig</button>
                 </div>
 
                 <div id="discover-status" class="status-box hidden">
@@ -151,73 +192,65 @@
                     <span id="discover-status-text">Analyserar din profil...</span>
                 </div>
 
-                <!-- Externa sökningar -->
                 <div id="external-links" class="card hidden">
                     <h3>Sök även på andra plattformar</h3>
                     <p class="card-desc">Baserat på din profil har AI:n skapat sökningar åt dig:</p>
                     <div id="external-links-list" class="external-links-list"></div>
                 </div>
 
-                <!-- Matchade jobb -->
                 <div id="discover-results" class="hidden">
-                    <h3 style="margin: 1.5rem 0 1rem;">Matchade jobb från Platsbanken</h3>
+                    <h3 class="section-title">Matchade jobb från Platsbanken</h3>
                     <div id="discover-jobs-list"></div>
                 </div>
             </section>
 
             <!-- MINA JOBB -->
             <section id="tab-jobs" class="tab-content">
-                <h2>Mina jobb</h2>
-                <p class="section-desc">Håll koll på jobb du är intresserad av. Lägg till jobbeskrivningar som AI:n kan generera brev för.</p>
-
+                <div class="page-header">
+                    <h1>Mina jobb</h1>
+                    <p class="page-desc">Håll koll på jobb du är intresserad av.</p>
+                </div>
                 <button id="add-job-btn" class="btn btn-primary" style="margin-bottom: 1.5rem;">+ Lägg till jobb</button>
-
-                <!-- Jobb formulär (dolt) -->
-                <div id="job-form" class="card form-card hidden">
+                <div id="job-form" class="card card-form hidden">
                     <h3 id="job-form-title">Lägg till jobb</h3>
                     <input type="text" id="job-title" class="input" placeholder="Jobbtitel (t.ex. 'Product Manager')">
                     <input type="text" id="job-company" class="input" placeholder="Företag (t.ex. 'Klarna')">
-                    <textarea id="job-description" class="textarea-large" placeholder="Klistra in jobbeskrivningen här..."></textarea>
+                    <textarea id="job-description" class="textarea" placeholder="Klistra in jobbeskrivningen här..."></textarea>
                     <div class="form-actions">
                         <button id="save-job-btn" class="btn btn-primary">Spara</button>
                         <button id="cancel-job-btn" class="btn btn-ghost">Avbryt</button>
                     </div>
                 </div>
-
                 <div id="jobs-list" class="items-list"></div>
             </section>
 
             <!-- GENERERA BREV -->
             <section id="tab-generate" class="tab-content">
-                <h2>Generera personligt brev</h2>
-                <p class="section-desc">Välj ett jobb och låt AI:n skriva ett personligt brev som matchar din stil och jobbets krav.</p>
-
+                <div class="page-header">
+                    <h1>Generera personligt brev</h1>
+                    <p class="page-desc">Välj ett jobb och låt AI:n skriva ett personligt brev som matchar din stil.</p>
+                </div>
                 <div class="card">
                     <h3>Välj jobb</h3>
                     <select id="job-select" class="input">
                         <option value="">-- Välj ett jobb --</option>
                     </select>
-
                     <div id="selected-job-preview" class="job-preview hidden">
                         <h4 id="preview-title"></h4>
                         <p id="preview-company" class="preview-company"></p>
                         <p id="preview-description" class="preview-desc"></p>
                     </div>
                 </div>
-
                 <div class="card">
                     <h3>Extra instruktioner (valfritt)</h3>
-                    <textarea id="extra-instructions" class="textarea-small" placeholder="T.ex. 'Betona min erfarenhet av projektledning' eller 'Håll det kort och koncist'"></textarea>
+                    <textarea id="extra-instructions" class="textarea-sm" placeholder="T.ex. 'Betona min erfarenhet av projektledning'"></textarea>
                 </div>
-
-                <button id="generate-btn" class="btn btn-primary btn-large">✨ Generera personligt brev</button>
-
+                <button id="generate-btn" class="btn btn-primary btn-large">Generera personligt brev</button>
                 <div id="generate-status" class="status-box hidden">
                     <div class="spinner"></div>
                     <span id="generate-status-text">Genererar ditt personliga brev...</span>
                 </div>
-
-                <div id="generated-result" class="card result-card hidden">
+                <div id="generated-result" class="card card-success hidden">
                     <div class="card-header">
                         <h3>Genererat personligt brev</h3>
                         <div class="result-actions">
@@ -227,9 +260,7 @@
                     </div>
                     <div id="generated-text" class="generated-text"></div>
                 </div>
-
-                <!-- Sparade genererade brev -->
-                <div class="card" style="margin-top: 2rem;">
+                <div class="card" style="margin-top: 1.5rem;">
                     <h3>Sparade genererade brev</h3>
                     <div id="generated-list" class="items-list"></div>
                 </div>
@@ -237,9 +268,10 @@
 
             <!-- INSTÄLLNINGAR -->
             <section id="tab-settings" class="tab-content">
-                <h2>Inställningar</h2>
-                <p class="section-desc">Anpassa appen efter dina behov.</p>
-
+                <div class="page-header">
+                    <h1>Inställningar</h1>
+                    <p class="page-desc">Anpassa appen efter dina behov.</p>
+                </div>
                 <div class="card">
                     <h3>AI-modell</h3>
                     <p class="card-desc">Välj vilken AI-modell som ska användas för att generera brev.</p>
@@ -249,10 +281,11 @@
                         <option value="gpt-4o">GPT-4o</option>
                         <option value="gpt-4o-mini">GPT-4o Mini (Snabbare)</option>
                     </select>
-                    <button id="save-model-btn" class="btn btn-primary" style="margin-top: 1rem;">Spara</button>
-                    <span id="model-status" class="status-msg"></span>
+                    <div class="card-actions">
+                        <button id="save-model-btn" class="btn btn-primary">Spara</button>
+                        <span id="model-status" class="status-msg"></span>
+                    </div>
                 </div>
-
                 <div class="card">
                     <h3>Hantera data</h3>
                     <p class="card-desc">Din data sparas i Puters molnlagring kopplat till ditt konto.</p>
@@ -261,7 +294,6 @@
             </section>
         </main>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>

@@ -1009,6 +1009,14 @@ function renderAll() {
     renderJobs();
     renderGeneratedLetters();
     renderDocuments();
+    updateStats();
+}
+
+function updateStats() {
+    document.getElementById('stat-cv').textContent = state.cvText ? '1' : '0';
+    document.getElementById('stat-letters').textContent = state.coverLetters.length;
+    document.getElementById('stat-cases').textContent = state.caseTexts.length;
+    document.getElementById('stat-docs').textContent = state.documents.length;
 }
 
 function renderLetters() {
